@@ -5,11 +5,11 @@ defmodule Plsm.IO.Export do
     """
     def type_output (field) do
         case field do
-            {name, type} when type == :integer -> four_space "field :#{name}, :integer\n"
-            {name, type} when type == :decimal -> four_space "field :#{name}, :decimal\n"
-            {name, type} when type == :float -> four_space  "field :#{name}, :float\n"
-            {name, type} when type == :string -> four_space "field :#{name}, :string\n"
-            {name,type} when type == :date -> four_space "field :#{name}, Ecto.DateTime\n"
+            {name, type, primary_key} when primary_key != true and type == :integer -> four_space "field :#{name}, :integer\n"
+            {name, type, primary_key} when primary_key != true and type == :decimal -> four_space "field :#{name}, :decimal\n"
+            {name, type, primary_key} when primary_key != true and type == :float -> four_space  "field :#{name}, :float\n"
+            {name, type, primary_key} when primary_key != true and type == :string -> four_space "field :#{name}, :string\n"
+            {name, type, primary_key} when primary_key != true and type == :date -> four_space "field :#{name}, :naive_datetime\n"
             _ -> ""
         end
     end
@@ -24,15 +24,15 @@ defmodule Plsm.IO.Export do
       {_, msg} -> IO.puts "Could not write #{name} to file: #{msg}"
     end
   end
-    
+
   @doc """
   Format the text of a specific table with the fields that are passed in. This is strictly formatting and will not verify the fields with the database
   """
   @spec prepare(Plsm.Database.Table, String.t) :: String.t
   def prepare(table, project_name) do
       output = module_declaration(project_name,table.header.name) <> model_inclusion() <> primary_key_declaration(table.columns) <> schema_declaration(table.header.name)
-      trimmed_columns = remove_foreign_keys(table.columns)
-      column_output = trimmed_columns |> Enum.reduce("",fn(x,a) -> a <> type_output({x.name, x.type}) end)
+      trimmed_columns = table.columns |> remove_foreign_keys
+      column_output = trimmed_columns |> Enum.reduce("",fn(x,a) -> a <> type_output({x.name, x.type, x.primary_key}) end)
       output = output <> column_output
       belongs_to_output = Enum.filter(table.columns, fn(column) ->
         column.foreign_table != nil and column.foreign_table != nil

@@ -43,7 +43,6 @@ defmodule Plsm.IO.Export do
       output = output <> belongs_to_output <> "\n"
 
       output = output <> two_space(end_declaration())
-      output = output <> changeset(table.columns)
       output <> end_declaration()
   end
 

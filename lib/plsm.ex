@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Plsm do
             table = %Plsm.Database.Table {header: header, columns: columns}
 
             Plsm.IO.Export.prepare(table, configs.project.name)
-            |> Plsm.IO.Export.write(header.name, configs.project.destination)
+            |> Plsm.IO.Export.write(Inflex.singularize(header.name), configs.project.destination)
         end
     end
 end
